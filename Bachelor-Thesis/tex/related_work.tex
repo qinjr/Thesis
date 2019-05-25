@@ -1,0 +1,230 @@
+\chapter{Related Work}\label{sec:rel}
+
+\section{Recommender Systems}
+With the rapid development of the Internet and the widespread use of large data
+storage and processing systems, it is very easy to access large volumn data today.
+However, it is more and more diffcult to find the really related, interesting and 
+useful data which is called \textit{information overload}.
+
+Over the last few decades, there has been a significant amount of research on 
+computer applications that can discover tailored appropriate content. Among these
+research, search engines and recommender systems are the two main methodologies.
+
+Both recommender systems and search engines aim to alleviate the information overload
+problem, however in different manner. For search engines, the user's intentions are
+clear which are indicated by the search keywords, while for the recommender systems,
+the user's intentions are vague. Users just hanging in the Internet without a specific
+intention. So, recommender system needs to recommend items to the users in this situation.
+
+Furthermore, with the development of the Internet applications, recommender systems are
+supposed to provide personal recommendation to the users, which means different
+users should be recommended with different items, and these items should satisfy the
+users' interests.
+
+For a typical recommender system, the recommendation problem can be splitted into 
+two folds: (i) prediction process. Estimating prediction for a single item; 
+(ii) ranking process. Ranking the items according to the prediction value in 
+the former step. While the former process is triggered by the user and 
+focuses on predicting the probability of the user will like the item in 
+question, the latter process is provided by the recommendation system itself 
+and offers an ordered top-N list of items that the user might like.
+
+There are three main categories of recommender systems:
+\begin{itemize}
+    \item \textit{CF recommender} produces recommendation based on other users
+        with similar tastes and interests. 
+    \item \textit{Content-based recommender} provides recommendation based on 
+        the similarity between items and exploiting the descriptive characteristics of
+        items which are liked by the users.
+    \item \textit{Hybrid recommender} combines the former two ways and it overcomes
+        the disadvantages of the other methods.
+\end{itemize}
+
+\section{Collaborative Filtering}
+In recommender system literatures, the most widely used method is 
+collaborative filtering \cite{goldberg1992using}, which learns from 
+the historical user-item interactions without exogenous information 
+about items or users. It recommends according to the modeled user 
+preferences, e,g., clicks \cite{qu2016product,agarwal2009spatio} and 
+ratings \cite{koren2009collaborative}, over the items.
+As shown in Fig.~\ref{fig:cf}, in a recommender system, there are $m$ users, 
+$\{u_1, u_2, ..., u_m\}$ and $n$ items, $\{p_1, p_2, ..., p_n\}$. The task is
+to predict the rating of the active user $a$ on item $q$. Then rank the items 
+according to the prediction rating, and forms the top-N items for user $a$.
+CF models seek to learn dense vector representations of users and items, 
+and predicts ratings using these representations. CF models represent a 
+user by the items that she used to like/click. When every users are 
+represented in this way, the similarity of users can be found and used.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{CF.png}
+	\caption{An overview of the CF process.}
+	\label{fig:cf}
+	\vspace{-10pt}
+\end{figure}
+It is important that in such CF systems, preferences of like-minded neighbor 
+users form the basis of all produced recommendations rather than individual 
+features of items.
+
+Many works \cite{koren2009matrix,salakhutdinov2007probabilistic,yang2012local,zhang2013optimizing} have been proposed based on collaborative filtering.
+Among them, latent factor models play a key role in CF methods, ranging from pLSA \cite{hofmann2004latent} and Latent Dirichlet Allocation \cite{blei2003latent} to SVD-based models \cite{koren2008factorization,chen2012svdfeature} and factorization machines \cite{rendle2010factorization}.
+% matrix factorization
+% neural network for collaborative filtering
+Nowadays, deep neural network (DNN) has attracted huge attentions in recommender systems because of its effective feature extraction and end-to-end model training with satisfying generalization \cite{zhang2017deep}.
+Some DNN methods \cite{he2017neural,he2018outer,qu2016product} are proposed for latent factor collaborative filtering.
+% temporal dynamics for CF-based model
+However, almost all of these approaches, either conventional matrix factorization methods or deep models, lack of temporal pattern mining. And the ``collaborative'' part of these models are implicit, though latent factor representation learning.
+\cite{koren2009collaborative} firstly proposed a SVD method for temporal dynamics while the model makes several assumptions with hand-engineered temporal bias thus it has poor generalization.
+%\cite{wu2017recurrent} utilized RNN for sequence modeling. However, this work does not consider spatial graph information, and the model applis simple sum-pooling of the interacted items in each time slice thus not effective.
+
+We will describe these models in detail in the following subsections:
+\subsection{Latent Factor Models}
+In this part, we take the famous SVD-based model as an example to describe
+the latent factor models.
+SVD models are actually a matrix factorization method which map both users 
+and items to a joint latent factor space of a low dimention and ratings are
+modeled as inner product in that space. Formally, each user $u$ is represented
+by a dense vector $p_u \in R^d$ and each item is represented as $q_i \in R^d$
+. The rating is calculated as $\hat{r_{ui}} = p_u^T q_i$. To learn the representations
+of users and items, we minimize the regularized the squared error:
+\begin{equation}
+    \min _{q_{*}, p_{*}} \sum_{(u, i, t) \in \mathcal{K}}\left(r_{u i}-q_{i}^{T} p_{u}\right)^{2}+\lambda\left(\left\|q_{i}\right\|^{2}+\left\|p_{u}\right\|^{2}\right).
+\end{equation}
+This design is not good enough for much of the existed rating values 
+are due to effects associated with either users or items, instead of 
+their interactions. So bias terms for both user and item are needed in the model.
+To achieve this, we use 
+\begin{equation}
+        \hat{r}_{u i}=\mu+b_{u}+b_{i}+q_{i}^{T} p_{u},
+\end{equation}
+to calculated the predicted ratings.
+Koren et al\cite{koren2008factorization} extended the above model by adding the influence
+of the user's interacted items as a feature to the prediction model, as
+\begin{equation}
+    \hat{r}_{u i}=\mu+b_{i}+b_{u}+q_{i}^{T}\left(p_{u}+|\mathrm{R}(u)|^{-\frac{1}{2}} \sum_{j \in \mathrm{R}(u)} y_{j}\right),
+\end{equation}
+where the set $R(u)$ contains the items that interacted with user $u$.
+
+
+\subsection{DNN-based CF Models}
+In this section, we present two works that are recently proposed for DNN-based
+collaborative filtering recommender.
+
+The first one is NCF \cite{he2017neural} which main contribution is replacing
+the inner product with a neural architecture that can learn an arbitrary 
+function from data. NCF is generic and can express and generalize matrix 
+factorization under its framework.
+The formulated framework of NCF is 
+\begin{equation}
+    \hat{y}_{u i}=f\left(\mathbf{P}^{T} \mathbf{v}_{u}^{U}, \mathbf{Q}^{T} \mathbf{v}_{i}^{I} | \mathbf{P}, \mathbf{Q}, \Theta_{f}\right)
+\end{equation}
+where $P \in R^{M \times K}$ and $P \in Q^{M \times K}$, denoting the 
+latent factor matrix for users and items, respectively; and $\Theta_{f}$
+is the parameters set of of the function $f$ which is implemented as a
+neural network. Because $f$ is actually a multi-layer perceptron, the 
+prediction function can be formulated as
+\begin{equation}
+    f\left(\mathbf{P}^{T} \mathbf{v}_{u}^{U}, \mathbf{Q}^{T} \mathbf{v}_{i}^{I}\right)=\phi_{o u t}\left(\phi_{X}\left(\ldots \phi_{2}\left(\phi_{1}\left(\mathbf{P}^{T} \mathbf{v}_{u}^{U}, \mathbf{Q}^{T} \mathbf{v}_{i}^{I}\right)\right) \ldots\right)\right).
+\end{equation}
+The framework is shown in Fig.~\ref{fig:ncf}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{NCF.png}
+	\caption{Neural collaborative filtering framework.}
+	\label{fig:ncf}
+	\vspace{-10pt}
+\end{figure}
+It uses a log-likelihood funciton as the loss function to train the model,
+\begin{equation}
+    \begin{aligned} L &=-\sum_{(u, i) \in \mathcal{Y}} \log \hat{y}_{u i}-\sum_{(u, j) \in \mathcal{Y}^{-}} \log \left(1-\hat{y}_{u j}\right) \\ &=-\sum_{(u, i) \in \mathcal{Y} \cup \mathcal{Y}^{-}} y_{u i} \log \hat{y}_{u i}+\left(1-y_{u i}\right) \log \left(1-\hat{y}_{u i}\right) \end{aligned}
+\end{equation}
+whose optimization is done by performing stochastic gradient descent (SGD).
+
+The second one is DELF \cite{cheng2018delf}, a dual-embedding based deep latent factor 
+model for recommendation. This model take a dual view from both user-side and
+item-side. It not only uses the user's interacted items, but also item's interacted
+users. By utilizing dual side information to better model the relationship
+between the target user and the target item. Furthermore, DELF employs an 
+attention mechanism to discriminate the importance of interacted 
+users/items for dual-embedding learning. Another novel attempt of the model 
+is modeling the user-item interactions with four deep representations, and a fusion
+layer is used to subtly fuse the information of the four representations.
+The framework of DELF is shown in Fig. ~\ref{fig:delf}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{DELF.png}
+	\caption{DELF framework.}
+	\label{fig:delf}
+	\vspace{-10pt}
+\end{figure}
+
+In this model, the item-based user dense representation $m_u$ is modeled as,
+\begin{equation}
+    \mathbf{m}_{u}=\sum_{i \in R(u)} \alpha_{i} \mathbf{y}_{i}
+\end{equation}
+where $\alpha_{i}$ is the attention value which indicates the importance of
+the interacted item. The attention value is calculated as,
+\begin{equation}
+    \begin{aligned} \mathbf{h}_{i} &=\tanh \left(\mathbf{W}_{a} \mathbf{y}_{i}+\mathbf{b}_{a}\right) \\ \alpha_{i} &=\frac{\exp \left(\mathbf{h}_{i}^{T} \mathbf{h}_{a}\right)}{\sum_{i \in R(u)} \exp \left(\mathbf{h}_{i}^{T} \mathbf{h}_{a}\right)} \end{aligned}
+\end{equation}
+where $W_a$, $b_a$ denote the weight matrix and bias vector respectively, and
+$h_a$ is the context vector.
+Similarly, it represent the target item with user factors as,
+\begin{equation}
+    \mathbf{n}_{i}=\sum_{u \in R(i)} \alpha_{u} \mathbf{x}_{u}
+\end{equation}
+where the users that have interacted with the target item are aggregated as
+a user-based item representation. This is the "dual" view of DELF which is 
+attentional.
+
+To model the complex feature interactions between $u$ and $i$, DELF uses a 
+pairwise neural interaction layer instead of using a single network structure.
+It models the user-item interactions in a seperate way, formally,
+\begin{equation}
+\begin{array}{c}{\mathbf{h}^{j}=\phi_{L}^{j}\left(\ldots \phi_{2}^{j}\left(\phi_{1}^{j}\left(\mathbf{z}_{0}[j]\right)\right) \ldots\right)} \\ {\phi_{l}^{j}=\delta_{l}^{j}\left(\mathbf{W}_{l}^{j} \mathbf{z}_{l-1}^{j}+\mathbf{b}_{l}^{j}\right), l \in[1, L]} \\ {\mathbf{z}_{0}=\left[\mathbf{p}_{u} \oplus \mathbf{n}_{i}, \mathbf{p}_{u} \oplus \mathbf{q}_{i}, \mathbf{m}_{u} \oplus \mathbf{n}_{i}, \mathbf{m}_{u} \oplus \mathbf{q}_{i}\right]}\end{array}
+\end{equation}
+where $j \in \{1,2,3,4\}$; $h_j$ is the deep representation of embedding representation
+which is learned by $j$-th pairwise interaction neural network.
+The fusion and prediction layer is defined as,
+\begin{equation}
+\begin{array}{c}{\mathbf{h}_{f}=\delta_{f}\left(\mathbf{W}_{f} \mathbf{z}_{f}+\mathbf{b}_{f}\right)} \\ {\mathbf{z}_{f}=\mathbf{h}^{1} \oplus \mathbf{h}^{2} \oplus \mathbf{h}^{3} \oplus \mathbf{h}^{4}}\end{array}
+\end{equation}
+and the prediction function is
+\begin{equation}
+    \hat{R}_{u i}=\delta_{p}\left(\mathbf{W}_{p} \mathbf{h}_{f}+b_{f}\right)
+\end{equation}
+
+
+\section{Sequential User Modeling}
+One key aspect of recommender system is user modeling, i.e. to capture the latent interests of the user and derive the adaptive representation for each user\cite{zhou2018deepa,zheng2017joint}.
+Recently, sequential user modeling has drawn huge attention since the sequences of user behaviors have rich information for the user interests, especially for concept drifting \cite{widmer1996learning}, long-term behavior dependency \cite{koren2009collaborative,ren2019lifelong}, periodic patterns \cite{ren2018repeatnet}, etc.
+
+There are three categories for sequential user modeling.
+The first one is from the view of temporal collaborative filtering \cite{koren2009collaborative} with the consideration of drifting user preferences.
+The second stream is based on Markov-chain methodology \cite{rendle2010factorizing,he2016fusing,he2016vista} which implicitly models the user state dynamics and derive the outcome behaviors.
+The third school is based on deep neural networks, such as recurrent neural networks (RNN) \cite{hidasi2015session,hidasi2017recurrent,wu2017recurrent,jing2017neural,liu2016context,beutel2018latent,villatel2018recurrent} and convolutional neural networks (CNN) regarding the behavior history as an image \cite{tang2018personalized,kang2018self}.
+However, most of these methods only care about user's interest drifting and do not consider the sequential patterns of items, which also deliver rich information for user-item matching.
+Furthermore, most of these sequential models only care about user's own interaction history while ignore the information that could be found in similar users or items.
+
+In the following subsections, we describe the methods of third school using deep neural
+networks in details.
+\subsection{RNN-based Models}
+\subsection{CNN-based Models}
+\subsection{Attention-based Models}
+
+\section{Graph Pattern Mining in Recommender Systems}
+In the domain of recommender systems, there are two schools of graph pattern mining methods.
+
+The first school of models make use of additional information such as social networks \cite{song2019session,wu2019dual} or knowledge graphs \cite{wang2018ripplenet} to enhance the learning process of user-user relations or item-item relations respectively. These models are tricky since they use other side information which may not be easy to obtain.
+
+The second school only uses user-item bipartite interaction graph.
+The perspective of bipartite graph is novel for recommender system \cite{fadel2018link}, which could be facilitated by the recent advances of graph pattern mining \cite{kipf2016semi} and link prediction in graph domain \cite{van2017graph}.
+\cite{niu2018collaborative} utilize the graph information of both the target user and the target item for better collaborative filtering while they ignore the temporal dynamics of the evolving graphs.
+\cite{wu2017recurrent} use RNNs to do sequence modeling for both user and item side. However, the model applies simple sum-pooling on the interacted items/users in each time slice thus not effective.
+The model proposed in \cite{fadel2018link} captures spatial graph patterns along timeline with graph convolutional networks (GCN) \cite{van2017graph}. However, they just consider the first-order relations without collaborative information among the graphs.
+
+In the following subsections, we describe the methods of the two schools in details.
+
+\subsection{Social Network-based Models}
+\subsection{Knowledge Graph-based Models}
+\subsection{User-item Bipartite Graph-based Models}

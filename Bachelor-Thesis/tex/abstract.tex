@@ -1,0 +1,34 @@
+%# -*- coding: utf-8-unix -*-
+% !TEX program = xelatex
+% !TEX root = ../thesis.tex
+% !TEX encoding = UTF-8 Unicode
+%%==================================================
+%% abstract.tex for SJTU Master Thesis
+%%==================================================
+
+\begin{abstract}
+推荐系统 (Recommendation Systems)是一类信息过滤系统，它解决用户在商用系统中信息过载的问题，
+目前推荐系统越来越成为互联网世界重要的组成部分。推荐系统的核心任务是预测用户对某件商品的喜好。
+目前推荐系统邻域最流行的算法是协同过滤算法 (Collaborative Filtering)，它一般通过矩阵分解
+的方法学习用户/商品的隐变量，并且希望能够对用户间/商品间的相似关系进行建模。但是，协同过滤
+忽略了用户兴趣与商品性质随时间变化的动态过程，而且它只利用用户自己交互过的商品 (或商品自己交互过的用户) 信息
+去反映用户的兴趣 (商品的性质)。
+有一些工作提出了一些捕捉用户兴趣随时间变化的方法，但是这些方法
+只考虑用户端的行为序列，而忽视了商品端的时间序列变化 (商品不同时刻吸引不同的用户)。并且这些序列
+建模的方法忽视了协同关系，比如不同用户间的相似兴趣、商品间的相似性质等。
+在本篇文章中，我们从时序增量图的视角出发，提出了一种结合协同过滤与序列模型的方法: \textbf{S}equential \textbf{Co}llaborative \textbf{Re}commender 
+(\score)，它从时间和空间两个维度出发，不仅在时间维度上同时建模用户和商品的两段序列，也在空间
+维度上建模用户间 (商品间)的协同关系，从而达到更好的建模效果。通过在三个大规模真实世界数据集上的实验，
+我们提出的模型相比目前有的方法有着明显的提高。
+
+
+\end{abstract}
+
+\begin{englishabstract}
+    Recommender system alleviates information overload for the users on online business platforms, thus it has become a key part in online information systems. The core task of recommender system is to predict the user preference over the items.
+    The most widely adopted methodology is collaborative filtering implemented through factorization models or latent factor-based models, which seeks to utilize the similarity among users or items. However, it ignores the temporal dynamics such as the changing preference of the user and popularity trends of the item, and it only uses target user's (or item's) own interacted items (users) to indicate user interests (or item attractions).
+    Several works have been proposed to capture sequential patterns of the user's interests, while they do not consider the item-side temporal dynamics. Worse still, the dynamics of collaborative relations, i.e., similar tastes of users or analogous properties of items at different time, have been abandoned in these sequential recommendation models. 
+    In this paper, we take an intersectional view and propose \textbf{S}equential \textbf{Co}llaborative \textbf{Re}commender (\score) which not only captures the \textit{temporal} patterns from both user-side and item-side behavior sequences, but also collaboratively synthesizes the \textit{spatial} information from user-item interaction graph at each time slice for better modeling. The comprehensive experiments over three real-world large-scale datasets show the significant improvement of the proposed model.
+
+\end{englishabstract}
+
