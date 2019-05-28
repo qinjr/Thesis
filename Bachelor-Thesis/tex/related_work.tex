@@ -82,7 +82,7 @@ We will describe these models in detail in the following subsections:
 In this part, we take the famous SVD-based model as an example to describe
 the latent factor models.
 SVD models are actually a matrix factorization method which map both users 
-and items to a joint latent factor space of a low dimention and ratings are
+and items to a joint latent factor space of a low dimension and ratings are
 modeled as inner product in that space. Formally, each user $u$ is represented
 by a dense vector $p_u \in R^d$ and each item is represented as $q_i \in R^d$
 . The rating is calculated as $\hat{r_{ui}} = p_u^T q_i$. To learn the representations
@@ -209,8 +209,124 @@ Furthermore, most of these sequential models only care about user's own interact
 In the following subsections, we describe the methods of third school using deep neural
 networks in details.
 \subsection{RNN-based Models}
+In this part, we introduce the RNN-based sequential recommendation model. We take
+GRU4Rec \cite{hidasi2015session} as an example. This is the first work to use
+recurrent neural networks (RNNs) in the domian of recommender system. Real-life 
+recommender systems has the problem of having to base recommendations only on 
+short term session-based data, instead of long-term user sequential behaviors.
+Furthermore, traditional models lack the ability of capturing the sequential 
+patterns embedded in the users behaviors.
+
+This model, as indicated by its name: GRU4Rec, utilizes Gated Recurrent Unit to
+model the sequential patterns of user behavior. The framework of GRU4Rec is shown
+in Fig.~\ref{fig:gru4rec}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\columnwidth]{GRU4Rec.png}
+	\caption{GRU4Rec framework.}
+	\label{fig:gru4rec}
+	\vspace{-10pt}
+\end{figure}
+Formally, GRU function is the following, 
+\begin{equation}
+    \mathbf{h}_{\mathbf{t}}=\left(1-\mathbf{z}_{\mathbf{t}}\right) \mathbf{h}_{\mathbf{t}-\mathbf{1}}+\mathbf{z}_{\mathbf{t}} \hat{\mathbf{h}_{t}}
+\end{equation}
+where the update gate $\mathbf{z}_t$ is calculated as,
+\begin{equation} \label{eq:2-14}
+    \mathbf{z}_{\mathbf{t}}=\sigma\left(W_{z} \mathbf{x _ { t }}+U_{z} \mathbf{h}_{\mathbf{t}-\mathbf{1}}\right)
+\end{equation}
+while the candidate activation function $\hat{\mathbf{h}_t}$ is computed in a similar
+manner as, 
+\begin{equation}
+    \hat{\mathbf{h}_{\mathrm{t}}}=\tanh \left(W \mathbf{x}_{\mathbf{t}}+U\left(\mathbf{r}_{\mathbf{t}} \odot \mathbf{h}_{\mathbf{t}-\mathbf{1}}\right)\right)
+\end{equation}
+and the final reset gate $\mathbf{r}_t$ is given by,
+\begin{equation}
+    \mathbf{r}_{\mathbf{t}}=\sigma\left(W_{r} \mathbf{x}_{\mathbf{t}}+U_{r} \mathbf{h}_{\mathbf{t}-\mathbf{1}}\right)
+\end{equation}
+In Eq.~\ref{eq:2-14}, $\mathbf{x}_t$ is the input, which is the user behavior at
+each time which is actually item that is clicked by the user. It is notable that
+we use one-hot encoding to represent the items, and they need to be fed to
+an embedding layer first before the GRU layers, as shown in Fig.~\ref{fig:gru4rec}.
+
+GRU4Rec uses \textbf{BPR} (Bayesian Personalized Ranking) ranking loss, 
+which is defined as,
+\begin{equation}
+    L_s = -\frac{1}{N_{S}} \cdot \sum_{j=1}^{N_{S}} \log \left(\sigma\left(\hat{r}_{s, i}-\hat{r}_{s, j}\right)\right)
+\end{equation}
+It compares the score of a positive and a sampled negative item, and tries
+to maximize the score of the positive item while minimize the score of the negative
+sample.
+
 \subsection{CNN-based Models}
+In this subsection, we introduce the CNN-based sequential recommender system: Caser
+\cite{tang2018personalized}. The main idea of this model is to regard the user
+sequential behaviors as an image by embedding the user's recent interacted items
+into low-dimension representations. And it is the first work to utilize convolutional
+neural networks (CNNs) in the domain of sequential user modeling. CNNs achieve
+huge success in computer vision field, and this work shows that it has its
+protential in sequential pattern mining and its time complexity is better than
+the RNN-based models.
+
+The Caser framework is shown in Fig.~\ref{fig:caser}
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.9\columnwidth]{Caser.png}
+	\caption{Caser framework.}
+	\label{fig:caser}
+	\vspace{-10pt}
+\end{figure}
+it uses convolution kernels as the sequential pattern aggregators. Caser
+convolves from both horizontal and vertical directions.
+The network is trained with \textit{cross-entropy} loss.
+\begin{equation}
+    \ell=\sum_{u} \sum_{t \in C^{u}} \sum_{i \in \mathcal{D}_{t}^{u}}-\log \left(\sigma\left(\boldsymbol{y}_{i}^{(u, t)}\right)\right)+\sum_{j \neq i}-\log \left(1-\sigma\left(\boldsymbol{y}_{j}^{(u, t)}\right)\right)
+\end{equation}
+
 \subsection{Attention-based Models}
+In this subsection, we describe the newly emerging attention-based models for 
+sequential user modeling. SASRec \cite{kang2018self} is based on Transformer \cite{vaswani2017attention},
+which utilizes self-attention mechanism to capture sequential patterns.
+The key part of SASRec is the multi-head self-attention block, which is defined as,
+\begin{equation}
+    \text { Attention }(\mathbf{Q}, \mathbf{K}, \mathbf{V})=\operatorname{softmax}\left(\frac{\mathbf{Q} \mathbf{K}^{T}}{\sqrt{d}}\right) \mathbf{V}
+\end{equation}
+where $Q$ is the queries, $K$ the keys and $V$ the values. "Self-"attention means
+that $Q = K = V$. Formally defined as,
+\begin{equation}
+    \mathbf{S}=\mathrm{SA}(\widehat{\mathbf{E}})=\text { Attention }\left(\widehat{\mathbf{E}} \mathbf{W}^{Q}, \widehat{\mathbf{E}} \mathbf{W}^{K}, \widehat{\mathbf{E}} \mathbf{W}^{V}\right)
+\end{equation}
+This process can be reproduced multiple times, thus it forms the multi-head
+self-attention block.
+Though the self-attention is able to aggregate all previous items’ 
+embeddings with adaptive weights, but it is still a linear model. To give it 
+non-linear abilities to capture more complex patterns, it defines a point-wide
+feed-forward network as, 
+\begin{equation}
+    \mathbf{F}_{i}=\mathrm{FFN}\left(\mathbf{S}_{i}\right)=\operatorname{ReLU}\left(\mathbf{S}_{i} \mathbf{W}^{(1)}+\mathbf{b}^{(1)}\right) \mathbf{W}^{(2)}+\mathbf{b}^{(2)}
+\end{equation}
+Thus, the multi-head self-attention mechanism is conducted through stacking
+self-attention blocks as, 
+\begin{equation}
+\begin{array}{c}{\mathbf{S}^{(b)}=\mathrm{SA}\left(\mathbf{F}^{(b-1)}\right)} \\ {\mathbf{F}_{i}^{(b)}=\mathrm{FFN}\left(\mathbf{S}_{i}^{(b)}\right), \quad \forall i \in\{1,2, \ldots, n\}}\end{array}
+\end{equation}
+The model is trained using \textit{cross-entropy loss}. It is important that
+SASRec uses more supervision signals at each time point, which is shown in Fig.~\ref{fig:sasrec}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\columnwidth]{SASRec.png}
+	\caption{A simplified diagram showing the training process of SASRec.}
+	\label{fig:sasrec}
+	\vspace{-10pt}
+\end{figure}
+At each time step, the model considers all previous items, and uses attention to ‘focus on’ items relevant to the next action.
+Another significant part of SASRec is the position embedding that makes each position has its
+own low-dimension vector representation. Position embeddings are used to provide
+sequential information for the model, because SASRec is not an auto-regressive model.
+So, the embedding matirx $\widehat{\mathbf{E}}$ is defined as,
+\begin{equation}
+\widehat{\mathbf{E}}=\left[ \begin{array}{c}{\mathbf{M}_{s_{1}}+\mathbf{P}_{1}} \\ {\mathbf{M}_{s_{2}}+\mathbf{P}_{2}} \\ {\cdots} \\ {\mathbf{M}_{s_{n}}+\mathbf{P}_{n}}\end{array}\right]
+\end{equation}
 
 \section{Graph Pattern Mining in Recommender Systems}
 In the domain of recommender systems, there are two schools of graph pattern mining methods.
@@ -226,5 +342,158 @@ The model proposed in \cite{fadel2018link} captures spatial graph patterns along
 In the following subsections, we describe the methods of the two schools in details.
 
 \subsection{Social Network-based Models}
+Social Network is a good source to get user-user relationships. It is an important
+assumption that friends are more likely to have similar tastes, so the opinions
+of friends plays an important role in the decision making process of the 
+target user.
+
+We introduce the state-of-the-art model in social sequential recommendation,
+DGRec \cite{song2019session} which is shown in Fig.~\ref{fig:dgrec}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\columnwidth]{DGRec.png}
+	\caption{A schematic view of DGRec for dynamic social recommendation.}
+	\label{fig:dgrec}
+	\vspace{-10pt}
+\end{figure}
+DGRec uses RNN to model the short-term user interest dynamics as,
+\begin{equation}
+    h_{n}=f\left(i_{T+1, n}^{u}, h_{n-1}\right)
+\end{equation}
+where $h_n$ represents the user's interests and $f(\cdot, \cdot)$ is a non-linear
+funciton combining both sources of information. In practice, $f$ is modeled
+by Long Short-Term Memory (LSTM) as,
+\begin{equation}
+\begin{aligned} x_{n} &=\sigma\left(\mathbf{W}_{x}\left[h_{n-1}, i_{T+1, n}^{u}\right]+b_{x}\right) \\ f_{n} &=\sigma\left(\mathbf{W}_{f}\left[h_{n-1}, i_{T+1, n}^{u}\right]+b_{f}\right) \\ o_{n} &=\sigma\left(\mathbf{W}_{o}\left[h_{n-1}, i_{T+1, n}^{u}\right]+b_{o}\right) \\ \tilde{c}_{n} &=\tanh \left(\mathbf{W}_{c}\left[h_{n-1}, i_{T+1, n}^{u}\right]+b_{c}\right) \\ c_{n} &=f_{n} \odot c_{n-1}+x_{n} \odot \tilde{c}_{n} \\ h_{n} &=o_{n} \odot \tanh \left(c_{n}\right) \end{aligned}
+\end{equation}
+where $\sigma$ is the sigmoid funciton: $\sigma(x)=(1+\exp (-x))^{-1}$.
+
+The target user is represented by its short-term interest which is used as 
+the context of recommendation. And the long-term representation is just from
+a embedding matrix.
+
+DGRec uses Graph Attention Network to aggregate the friends' interests.
+It calculates the similarity between the target user's node 
+representation $h_u^{(l)}$ and all of its neighbors' representations $h_k^{(l)}$:
+\begin{equation}
+    \alpha_{u k}^{(l)}=\frac{\exp \left(f\left(h_{u}^{(l)}, h_{k}^{(l)}\right)\right)}{\sum_{j \in N(u) \cup\{u\}} \exp \left(f\left(h_{u}^{(l)}, h_{j}^{(l)}\right)\right)}
+\end{equation}
+where $h_u^{(l)}$ is the representation of the target user at layer $l$, and
+$f\left(h_{u}^{(l)}, h_{k}^{(l)}\right)=h_{u}^{(l)^{\top}} h_{k}^{(l)}$ is the 
+similarity function between two elements. So, the final representation of the 
+target user node is 
+\begin{equation}
+    \tilde{h}_{u}^{(l)}=\sum_{k \in N(u) \cup\{u\}} \alpha_{u k}^{(l)} h_{k}^{(l)}
+\end{equation}
+which is used in the prediction function.
+
 \subsection{Knowledge Graph-based Models}
+In this section, we introduce RippleNet \cite{wang2018ripplenet} which is proposed
+to use knowledge graph information to enhance the performance of recommendation.
+Similar to actual ripples propagating on the water, RippleNet stimulates 
+the propagation of user interests over the set of entities in the KG
+by iteratively and automatically extending a user’s potential interests 
+along links in the KG. The multiple "ripples" activated by 
+a user’s historically clicked items are thus superposed to form the 
+preference distribution of the user with respect to a candidate item, 
+which could be used for predicting the final clicking probability.
+The framework of RippleNet is shown in Fig.~\ref{fig:ripplenet}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\columnwidth]{RippleNet.png}
+	\caption{The overall framework of the RippleNet.}
+	\label{fig:ripplenet}
+	\vspace{-10pt}
+\end{figure}
+
+At each hop, the items in the ripple set is weighted by an attention mechanism utilizing
+the KG information as,
+\begin{equation}
+    p_{i}=\operatorname{softmax}\left(\mathbf{v}^{\mathrm{T}} \mathbf{R}_{i} \mathbf{h}_{i}\right)=\frac{\exp \left(\mathbf{v}^{\mathrm{T}} \mathbf{R}_{i} \mathbf{h}_{i}\right)}{\sum_{(h, r, t) \in \mathcal{S}_{u}^{1}} \exp \left(\mathbf{v}^{\mathrm{T}} \mathbf{R} \mathbf{h}\right)}
+\end{equation}
+where $R_i \in R^{d \times d}$ and $h_i \in R^d$ are the embeddings of relation
+$r_i$ and head $h_i$ respectively, and $\mathbf{v}$ is the item embedding in the
+ripple set.
+Thus, the user representation is given by 
+\begin{equation}
+    \mathbf{u}=\mathbf{o}_{u}^{1}+\mathbf{o}_{u}^{2}+\ldots+\mathbf{o}_{u}^{H},    
+\end{equation}
+and the final prediction score is $\hat{y}_{u v}=\sigma\left(\mathbf{u}^{\mathrm{T}} \mathbf{v}\right)$,
+where $\sigma(x)=\frac{1}{1+\exp (-x)}$ is the sigmoid funciton. And the model
+is trained by minimizing negative log likelihood as, 
+\begin{equation}
+\begin{aligned} \min \mathcal{L}=&-\log (p(\mathrm{Y} | \Theta, \mathcal{G}) \cdot p(\mathcal{G} | \Theta) \cdot p(\Theta)) \\=& \sum_{(u, v) \in \mathrm{Y}}-\left(y_{u v} \log \sigma\left(\mathbf{u}^{\mathrm{T}} \mathbf{v}\right)+\left(1-y_{u v}\right) \log \left(1-\sigma\left(\mathbf{u}^{\mathrm{T}} \mathbf{v}\right)\right)\right) \\ &+\frac{\lambda_{2}}{2} \sum_{r \in \mathcal{R}}\left\|\mathbf{I}_{r}-\mathbf{E}^{\mathrm{T}} \mathbf{R E}\right\|_{2}^{2}+\frac{\lambda_{1}}{2}\left(\|\mathbf{V}\|_{2}^{2}+\|\mathbf{E}\|_{2}^{2}+\sum_{r \in \mathcal{R}}\|\mathbf{R}\|_{2}^{2}\right) \end{aligned}
+\end{equation}
+
 \subsection{User-item Bipartite Graph-based Models}
+In this part, we introduce two models which are based on user-item bipartite
+graphs to do sequential modeling. 
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=0.8\columnwidth]{RRN.png}
+	\caption{The overall framework of the RRN.}
+	\label{fig:rrn}
+	\vspace{-10pt}
+\end{figure}
+
+The first one is RRN \cite{wu2017recurrent}. It is a dual-sequence model which
+uses both the user and item-side temporal dynamics. RRN can be regard as a
+graph model, for it uses the first-order neighbor of the target user and item.
+The framework of RRN is shown in Fig.~\ref{fig:rrn}
+
+It splits the timeline into $T$ slices, and in each time slice, RRN uses
+sum pooling as the graph information aggregator as,
+\begin{equation}
+    y_{t} :=W_{\text { embed }}\left[x_{t}, 1_{\text { newbie }}, \tau_{t}, \tau_{t-1}\right]
+\end{equation}
+where $x_t$ is a multi-hot embedding indicating the items/users that are
+interacted by the target user/item. And the temporal dynamics are modeled using
+LSTM as $u_{t} :=\operatorname{LSTM}\left(u_{t-1}, y_{t}\right)$.
+Thus, the prediction function is 
+\begin{equation}
+    \hat{r}_{i j | t}=f\left(u_{i t}, m_{j t}, u_{i}, m_{j}\right) :=\left\langle\tilde{u}_{i t}, \tilde{m}_{j t}\right\rangle+\left\langle u_{i}, m_{j}\right\rangle
+\end{equation}
+where $\tilde{u}_{i t}$ is calculated as,
+\begin{equation}
+    \tilde{u}_{i t}=W_{\mathrm{user}} u_{i t}+b_{\mathrm{user}} \text { and } \tilde{m}_{j t}=W_{\mathrm{movie}} m_{j t}+b_{\mathrm{movie}}.
+\end{equation}
+The model is trained through optimizing the squared error.
+
+
+The second model is GCMC \cite{fadel2018link} which models the sequential
+recommendation task as a dynamic graph link prediction problem. It uses Graph
+Convolution Network (GCN) to aggregate the graph information and uses RNN
+to capture the sequential pattern of streaming graphs. This model also splits
+the timeline into $T$ slices.
+
+The framework of GCMC is shown in Fig.~\ref{fig:gcmc}.
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[width=1.0\columnwidth]{GCMC.png}
+	\caption{The overall framework of the GCMC.}
+	\label{fig:gcmc}
+	\vspace{-10pt}
+\end{figure}
+
+It uses a GCN-like graph aggregator called Graph Convolution Matrix Completion,
+which is defined as,
+\begin{equation}
+\left.\begin{array}{c}{\mathbf{h}_{u_{i}}=\xi\left(\operatorname{accum}_{r \in \mathcal{R}}\left\{\sum_{j \in \mathcal{N}_{i, r}} \frac{1}{c_{i j}} W_{r} \mathbf{x}_{v_{j}}\right\}\right)} \\ {\mathbf{z}_{u_{i}}=\xi\left(W \mathbf{h}_{u_{i}}\right)}\end{array}\right\}
+\end{equation}
+where $N_{i, r}$ is the neighbor set of the target user/item, $c_{ij}$ is a normalization constant,
+$\operatorname{accum}(\cdot)$ denotes an accumulation function that 
+can be either a vector concatenation or sum operation. And $\xi$ is the non-linear
+activation function.
+
+Then, the prediction of the score is given by,
+\begin{equation}
+    P\left(\hat{M}_{i j}=r\right)=\frac{\exp \left(\mathbf{z}_{u_{i}}^{T} Q_{r} \mathbf{z}_{v_{j}}\right)}{\sum_{s \in \mathcal{R}} \exp \left(\mathbf{z}_{u_{i}}^{T} Q_{s} \mathbf{z}_{v_{j}}\right)}
+\end{equation}
+where each $Q_r \in R^{d_{output} \times d_{output}}, r \in R$ is learned during training process.
+The model is trained to minimize the negative logarithmic likelihood of 
+the predicted ratings as,
+\begin{equation}
+    \mathcal{L}(M, \hat{M})=-\sum_{\left(u_{i}, r, v_{j}\right) \in \mathcal{E}} \log P\left(\hat{M}_{i j}=r\right).
+\end{equation}

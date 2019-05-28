@@ -314,8 +314,34 @@ where $\bm{\Phi}$ includes the parameters in GRUs, $\bm{W}$, $\bm{a}$ in \textit
 \section{Relations to Previous Works}
 The proposed model can be simplified to previous frameworks of recommender systems:
 
+
+
 \begin{itemize}[leftmargin=15pt]
-	\item \textbf{Dual Sequence Framework:} If we only use 1-hop neighbors of the target user and the target item, as $u_t = u_t^1$ and $v_t = v_t^1$, and treat each neighbor and each time slice equally, \score~ would have the same structure as RRN \cite{wu2017recurrent} and GCMC \cite{fadel2018link}.
-	\item \textbf{Single Sequence Framework:} If we eliminate the item-side sequence from the dual sequence framework above and make each time slice only has one interaction, we might get the framework of sequential recommendation models similar to RNN models \cite{hidasi2015session,ren2019lifelong,zhou2018deepb}.
-	\item \textbf{Non Sequence Framework:} If we don't consider the temporal dynamics of user interests of the above single sequence framework, and consider the user behaviors as a whole, then \score~ might degenerate to the traditional CF models \cite{koren2008factorization}.
+	\item \textbf{Dual Sequence Framework:} If we only use 1-hop neighbors of the target user and the target item, as $u_t = u_t^1$ and $v_t = v_t^1$, and treat each neighbor and each time slice equally, \score~ would have the same structure as RRN \cite{wu2017recurrent} and GCMC \cite{fadel2018link}. As shown in Fig.~\ref{fig:dual-seq}.
+	\item \textbf{Single Sequence Framework:} If we eliminate the item-side sequence from the dual sequence framework above and make each time slice only has one interaction, we might get the framework of sequential recommendation models similar to RNN models \cite{hidasi2015session,ren2019lifelong,zhou2018deepb}. As shown in Fig.~\ref{fig:single-seq}.
+	\item \textbf{Non Sequence Framework:} If we don't consider the temporal dynamics of user interests of the above single sequence framework, and consider the user behaviors as a whole, then \score~ might degenerate to the traditional CF models \cite{koren2008factorization}. As shown in Fig.~\ref{fig:non-seq}.
 \end{itemize}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=0.7\columnwidth]{dual-seq.png}
+	\caption{Dual Sequence Framework.}
+	\label{fig:dual-seq}
+	\vspace{-10pt}
+\end{figure}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=0.7\columnwidth]{single-seq.png}
+	\caption{Single Sequence Framework.}
+	\label{fig:single-seq}
+	\vspace{-10pt}
+\end{figure}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=0.7\columnwidth]{non-seq.png}
+	\caption{None Sequence Framework.}
+	\label{fig:non-seq}
+	\vspace{-10pt}
+\end{figure}
